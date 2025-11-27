@@ -1,9 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { authStore } from '@/store/auth.store'
+import { authStore, type User, type AuthResponse } from '@/store/auth.store'
 import { api } from '@/api/axios'
 import { endpoints } from '@/api/endpoints'
-import type { User } from '@/store/auth.store'
 
 interface LoginCredentials {
   email: string
@@ -15,38 +14,19 @@ interface RegisterData {
   password: string
   firstName: string
   lastName: string
+  phone?: string
   role?: string
 }
 
-interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-}
-
 /**
- * Hook to get current authenticated user
+ * Hook for authentication operations
+ * Provides login, register, logout, and refresh token functionality
  */
 export const useAuth = () => {
   const user = authStore((state) => state.user)
   const isAuthenticated = authStore((state) => state.isAuthenticated)
-  const accessToken = authStore((state) => state.accessToken)
-  const storeLogout = authStore((state) => state.logout)
-
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-
-  // Fetch current user
-  const { data: currentUser, isLoading } = useQuery({
-    queryKey: ['auth', 'me'],
-    queryFn: async () => {
-      const response = await api.get<User>(endpoints.auth.me)
-      authStore.getState().setUser(response.data)
-      return response.data
-    },
-    enabled: !!accessToken && isAuthenticated,
-    retry: false,
-  })
 
   // Login mutation
   const loginMutation = useMutation({
@@ -58,8 +38,11 @@ export const useAuth = () => {
       return response.data
     },
     onSuccess: (data) => {
-      authStore.getState().setTokens(data.accessToken, data.refreshToken)
-      authStore.getState().setUser(data.user)
+      authStore.getState().setAuth({
+        user: data.user,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      })
       queryClient.setQueryData(['auth', 'me'], data.user)
       navigate('/dashboard')
     },
@@ -71,49 +54,65 @@ export const useAuth = () => {
       const response = await api.post<AuthResponse>(endpoints.auth.register, data)
       return response.data
     },
-    onSuccess: (data) => {
-      authStore.getState().setTokens(data.accessToken, data.refreshToken)
-      authStore.getState().setUser(data.user)
-      queryClient.setQueryData(['auth', 'me'], data.user)
-      navigate('/dashboard')
+    onSuccess: () => {
+      // On successful registration, redirect to login
+      navigate('/login', { state: { message: 'Registration successful. Please login.' } })
     },
   })
 
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await api.post(endpoints.auth.logout)
+      await authStore.getState().logout()
     },
     onSuccess: () => {
-      storeLogout()
       queryClient.clear()
       navigate('/login')
     },
     onError: () => {
-      // Even if API call fails, logout locally
-      storeLogout()
+      // Even if logout fails, clear local state
+      authStore.getState().clearAuth()
       queryClient.clear()
       navigate('/login')
     },
   })
 
-  const logout = () => {
-    logoutMutation.mutate()
+  // Refresh access token (imperative function for startup refresh)
+  const refreshAccessToken = async (): Promise<void> => {
+    const refreshToken = authStore.getState().getRefreshToken()
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
+
+    try {
+      const response = await api.post<AuthResponse>(endpoints.auth.refresh, {
+        refreshToken,
+      })
+      authStore.getState().setAuth({
+        user: response.data.user,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+      })
+    } catch (error) {
+      // Refresh failed, clear auth
+      authStore.getState().clearAuth()
+      throw error
+    }
   }
 
   return {
-    user: currentUser || user,
+    user,
     isAuthenticated,
-    isLoading,
     login: loginMutation.mutate,
     loginAsync: loginMutation.mutateAsync,
     isLoggingIn: loginMutation.isPending,
     register: registerMutation.mutate,
     registerAsync: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,
-    logout,
+    logout: () => logoutMutation.mutate(),
     isLoggingOut: logoutMutation.isPending,
-    error: loginMutation.error || registerMutation.error,
+    refreshAccessToken,
+    error: loginMutation.error || registerMutation.error || logoutMutation.error,
   }
 }
 

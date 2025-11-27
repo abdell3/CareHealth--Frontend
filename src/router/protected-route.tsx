@@ -1,15 +1,14 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { authStore } from '@/store/auth.store'
-import { hasRouteAccess } from '@/utils/role-based-access'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  requiredRole?: string[]
+  allowedRoles?: string[]
 }
 
 export const ProtectedRoute = ({
   children,
-  requiredRole,
+  allowedRoles,
 }: ProtectedRouteProps) => {
   const isAuthenticated = authStore((state) => state.isAuthenticated)
   const user = authStore((state) => state.user)
@@ -20,19 +19,13 @@ export const ProtectedRoute = ({
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Check route access based on role
-  if (!hasRouteAccess(location.pathname, user.role)) {
-    // User doesn't have access, redirect to dashboard
-    return <Navigate to="/dashboard" replace />
-  }
-
-  // Check if specific role is required
-  if (
-    requiredRole &&
-    !requiredRole.includes(user.role) &&
-    user.role !== 'admin'
-  ) {
-    return <Navigate to="/dashboard" replace />
+  // Check if specific roles are required and user's role is allowed
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!allowedRoles.includes(user.role)) {
+      // User doesn't have required role, redirect to dashboard with access denied
+      // Note: In a real app, you might want to show a toast/notification here
+      return <Navigate to="/dashboard" replace />
+    }
   }
 
   return <>{children}</>

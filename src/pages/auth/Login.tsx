@@ -8,13 +8,13 @@ import { LogIn, Mail, Lock, Loader2 } from 'lucide-react'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
 
 export const Login = () => {
-  const { login, isLoggingIn, error } = useAuth()
+  const { loginAsync, isLoggingIn, error } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -28,7 +28,7 @@ export const Login = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data)
+      await loginAsync(data)
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard'
       navigate(from, { replace: true })
     } catch (err) {

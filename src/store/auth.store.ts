@@ -16,6 +16,17 @@ export interface User {
   }
 }
 
+export interface AuthResponse {
+  accessToken: string
+  refreshToken: string
+  user: User
+}
+
+export interface Tokens {
+  accessToken: string
+  refreshToken: string
+}
+
 interface AuthState {
   accessToken: string | null
   refreshToken: string | null
@@ -23,29 +34,34 @@ interface AuthState {
   isAuthenticated: boolean
 
   // Actions
-  setTokens: (accessToken: string, refreshToken: string) => void
-  setUser: (user: User) => void
-  logout: () => void
-  updateUser: (user: Partial<User>) => void
+  setAuth: (payload: { user: User; accessToken: string; refreshToken: string }) => void
+  clearAuth: () => void
+  logout: () => Promise<void>
+  getAccessToken: () => string | null
+  getRefreshToken: () => string | null
+  getUser: () => User | null
 }
 
+// TODO: Migrate refreshToken storage from localStorage to HttpOnly cookie for better security.
+// Currently using localStorage for simplicity, but HttpOnly cookies prevent XSS attacks.
 export const authStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       accessToken: null,
       refreshToken: null,
       user: null,
       isAuthenticated: false,
 
-      setTokens: (accessToken, refreshToken) => {
-        set({ accessToken, refreshToken, isAuthenticated: true })
+      setAuth: (payload) => {
+        set({
+          accessToken: payload.accessToken,
+          refreshToken: payload.refreshToken,
+          user: payload.user,
+          isAuthenticated: true,
+        })
       },
 
-      setUser: (user) => {
-        set({ user, isAuthenticated: true })
-      },
-
-      logout: () => {
+      clearAuth: () => {
         set({
           accessToken: null,
           refreshToken: null,
@@ -54,14 +70,36 @@ export const authStore = create<AuthState>()(
         })
       },
 
-      updateUser: (userData) => {
-        set((state) => ({
-          user: state.user ? { ...state.user, ...userData } : null,
-        }))
+      logout: async () => {
+        try {
+          // Lazy import to avoid circular dependency
+          const { api } = await import('@/api/axios')
+          const { endpoints } = await import('@/api/endpoints')
+          // Attempt to call logout endpoint
+          await api.post(endpoints.auth.logout)
+        } catch (error) {
+          // Even if API call fails, clear local state
+          console.error('Logout API call failed:', error)
+        } finally {
+          // Always clear local state regardless of API call result
+          get().clearAuth()
+        }
+      },
+
+      getAccessToken: () => {
+        return get().accessToken
+      },
+
+      getRefreshToken: () => {
+        return get().refreshToken
+      },
+
+      getUser: () => {
+        return get().user
       },
     }),
     {
-      name: 'auth-storage',
+      name: 'careflow_auth',
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,

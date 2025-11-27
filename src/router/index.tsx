@@ -92,7 +92,7 @@ const router = createBrowserRouter([
       {
         path: 'appointments/new',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse', 'receptionist']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
             <NewAppointment />
           </ProtectedRoute>
         ),
@@ -104,7 +104,7 @@ const router = createBrowserRouter([
       {
         path: 'patients',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse', 'receptionist']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
             <PatientsList />
           </ProtectedRoute>
         ),
@@ -112,7 +112,7 @@ const router = createBrowserRouter([
       {
         path: 'patients/:id',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse', 'receptionist']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
             <PatientDetail />
           </ProtectedRoute>
         ),
@@ -120,7 +120,7 @@ const router = createBrowserRouter([
       {
         path: 'users',
         element: (
-          <ProtectedRoute requiredRole={['admin']}>
+          <ProtectedRoute allowedRoles={['admin']}>
             <UsersList />
           </ProtectedRoute>
         ),
@@ -128,7 +128,7 @@ const router = createBrowserRouter([
       {
         path: 'users/:id',
         element: (
-          <ProtectedRoute requiredRole={['admin']}>
+          <ProtectedRoute allowedRoles={['admin']}>
             <UserDetail />
           </ProtectedRoute>
         ),
@@ -136,7 +136,7 @@ const router = createBrowserRouter([
       {
         path: 'prescriptions',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
             <PrescriptionsList />
           </ProtectedRoute>
         ),
@@ -144,7 +144,7 @@ const router = createBrowserRouter([
       {
         path: 'prescriptions/:id',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
             <PrescriptionDetail />
           </ProtectedRoute>
         ),
@@ -152,7 +152,7 @@ const router = createBrowserRouter([
       {
         path: 'lab-orders',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
             <LabOrdersList />
           </ProtectedRoute>
         ),
@@ -160,7 +160,7 @@ const router = createBrowserRouter([
       {
         path: 'lab-orders/:id',
         element: (
-          <ProtectedRoute requiredRole={['admin', 'doctor', 'nurse']}>
+          <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
             <LabOrderDetail />
           </ProtectedRoute>
         ),

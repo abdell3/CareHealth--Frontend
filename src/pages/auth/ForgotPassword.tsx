@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, ArrowLeft, Send } from 'lucide-react'
+import { Mail, ArrowLeft, Send, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import { api } from '@/api/axios'
+import { endpoints } from '@/api/endpoints'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -13,6 +15,8 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 
 export const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const {
     register,
@@ -23,12 +27,19 @@ export const ForgotPassword = () => {
   })
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
+    setIsSubmitting(true)
+    setError(null)
     try {
-      // TODO: Implement forgot password API call
-      console.log('Forgot password:', data)
+      await api.post(endpoints.auth.requestPasswordReset, { email: data.email })
       setIsSubmitted(true)
-    } catch (err) {
-      console.error('Forgot password error:', err)
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      setError(
+        axiosError?.response?.data?.message ||
+        'Une erreur est survenue. Veuillez réessayer.'
+      )
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -86,13 +97,30 @@ export const ForgotPassword = () => {
           )}
         </div>
 
+        {/* Error message */}
+        {error && (
+          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
+
         {/* Submit button */}
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          disabled={isSubmitting}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
-          <Send className="h-5 w-5" />
-          Envoyer le lien
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Envoi en cours...
+            </>
+          ) : (
+            <>
+              <Send className="h-5 w-5" />
+              Envoyer le lien
+            </>
+          )}
         </button>
       </form>
 
