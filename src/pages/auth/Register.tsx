@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { UserPlus, Mail, Lock, User, Loader2, Phone } from 'lucide-react'
+import { logger } from '@/utils/logger'
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'Le prénom doit contenir au moins 2 caractères'),
@@ -42,7 +43,7 @@ export const Register = () => {
         role: data.role,
       })
     } catch (err) {
-      console.error('Register error:', err)
+      logger.error('Register error', err)
     }
   }
 

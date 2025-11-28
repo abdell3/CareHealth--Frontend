@@ -3,20 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { authStore, type User, type AuthResponse } from '@/store/auth.store'
 import { api } from '@/api/axios'
 import { endpoints } from '@/api/endpoints'
-
-interface LoginCredentials {
-  email: string
-  password: string
-}
-
-interface RegisterData {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  phone?: string
-  role?: string
-}
+import type {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse as ApiAuthResponse,
+} from '@/types/api'
 
 /**
  * Hook for authentication operations
@@ -30,11 +21,8 @@ export const useAuth = () => {
 
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      const response = await api.post<AuthResponse>(
-        endpoints.auth.login,
-        credentials
-      )
+    mutationFn: async (credentials: LoginRequest) => {
+      const response = await api.post<ApiAuthResponse>(endpoints.auth.login, credentials)
       return response.data
     },
     onSuccess: (data) => {
@@ -50,8 +38,8 @@ export const useAuth = () => {
 
   // Register mutation
   const registerMutation = useMutation({
-    mutationFn: async (data: RegisterData) => {
-      const response = await api.post<AuthResponse>(endpoints.auth.register, data)
+    mutationFn: async (data: RegisterRequest) => {
+      const response = await api.post<ApiAuthResponse>(endpoints.auth.register, data)
       return response.data
     },
     onSuccess: () => {
@@ -85,7 +73,7 @@ export const useAuth = () => {
     }
 
     try {
-      const response = await api.post<AuthResponse>(endpoints.auth.refresh, {
+      const response = await api.post<ApiAuthResponse>(endpoints.auth.refresh, {
         refreshToken,
       })
       authStore.getState().setAuth({

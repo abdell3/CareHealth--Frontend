@@ -1,3 +1,4 @@
+import { memo, useMemo, useState } from 'react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import {
@@ -13,7 +14,6 @@ import {
   X,
   Heart,
 } from 'lucide-react'
-import { useState } from 'react'
 import { cn } from '@/libs/utils'
 import { getAccessibleRoutes } from '@/utils/role-based-access'
 
@@ -69,16 +69,17 @@ const navItems: NavItem[] = [
   },
 ]
 
-export const DashboardLayout = () => {
+export const DashboardLayout = memo(() => {
   const { user, logout } = useAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   if (!user) return null
 
-  const accessibleRoutes = getAccessibleRoutes(user.role)
-  const filteredNavItems = navItems.filter((item) =>
-    accessibleRoutes.includes(item.path)
+  const accessibleRoutes = useMemo(() => getAccessibleRoutes(user.role), [user.role])
+  const filteredNavItems = useMemo(
+    () => navItems.filter((item) => accessibleRoutes.includes(item.path)),
+    [accessibleRoutes]
   )
 
   const getUserInitials = () => {
@@ -194,6 +195,8 @@ export const DashboardLayout = () => {
       </div>
     </div>
   )
-}
+})
+
+DashboardLayout.displayName = 'DashboardLayout'
 
 

@@ -1,21 +1,19 @@
 import { Users, Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { PageLayout } from '@/components/layouts/PageLayout'
+import { Button } from '@/components/ui/button'
 
 export const PatientsList = () => {
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Gérez la liste de vos patients
-          </p>
-        </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+    <PageLayout
+      title="Patients"
+      description="Gérez la liste de vos patients"
+      actionButton={
+        <Button>
           <Plus className="h-5 w-5" />
           Nouveau patient
-        </button>
-      </div>
+        </Button>
+      }
+    >
 
       <div className="rounded-xl bg-white p-6 shadow-sm">
         <div className="flex flex-col items-center justify-center py-12">
@@ -28,7 +26,7 @@ export const PatientsList = () => {
           </p>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }
 

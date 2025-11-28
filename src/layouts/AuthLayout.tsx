@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 
@@ -6,7 +6,7 @@ interface AuthLayoutProps {
   children: ReactNode
 }
 
-export const AuthLayout = ({ children }: AuthLayoutProps) => {
+export const AuthLayout = memo(({ children }: AuthLayoutProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-medical-blue-50 to-medical-green-50">
       <div className="flex min-h-screen items-center justify-center p-4">
@@ -39,6 +39,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
       </div>
     </div>
   )
-}
+})
+
+AuthLayout.displayName = 'AuthLayout'
 
 

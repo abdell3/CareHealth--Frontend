@@ -79,7 +79,9 @@ export const authStore = create<AuthState>()(
           await api.post(endpoints.auth.logout)
         } catch (error) {
           // Even if API call fails, clear local state
-          console.error('Logout API call failed:', error)
+          // Error is logged via logger utility
+          const { logger } = await import('@/utils/logger')
+          logger.error('Logout API call failed', error)
         } finally {
           // Always clear local state regardless of API call result
           get().clearAuth()

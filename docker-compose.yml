@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: carehealth-frontend
+    ports:
+      - "3001:80"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000/api/v1}
+    restart: unless-stopped
+    networks:
+      - carehealth-network
+
+networks:
+  carehealth-network:
+    driver: bridge
+

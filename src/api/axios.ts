@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios'
-import { authStore } from '@/store/auth.store'
+import { authStore, type User } from '@/store/auth.store'
+import type { AuthResponse } from '@/types/api'
 
 // Base URL includes /api/v1 as per backend structure
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1'
@@ -96,11 +97,9 @@ api.interceptors.response.use(
 
       try {
         // Call refresh endpoint using separate instance (no interceptors)
-        const response = await refreshInstance.post<{
-          accessToken: string
-          refreshToken: string
-          user?: typeof authStore.getState().user
-        }>('/auth/refresh', { refreshToken })
+        const response = await refreshInstance.post<AuthResponse>('/auth/refresh', {
+          refreshToken,
+        })
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken, user } =
           response.data

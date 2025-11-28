@@ -1,15 +1,16 @@
+import { memo } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { authStore } from '@/store/auth.store'
+import { authStore, type User } from '@/store/auth.store'
+import { logger } from '@/utils/logger'
+
+type UserRole = User['role']
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  allowedRoles?: string[]
+  allowedRoles?: UserRole[]
 }
 
-export const ProtectedRoute = ({
-  children,
-  allowedRoles,
-}: ProtectedRouteProps) => {
+export const ProtectedRoute = memo(({ children, allowedRoles }: ProtectedRouteProps) => {
   const isAuthenticated = authStore((state) => state.isAuthenticated)
   const user = authStore((state) => state.user)
   const location = useLocation()
@@ -22,13 +23,20 @@ export const ProtectedRoute = ({
   // Check if specific roles are required and user's role is allowed
   if (allowedRoles && allowedRoles.length > 0) {
     if (!allowedRoles.includes(user.role)) {
-      // User doesn't have required role, redirect to dashboard with access denied
-      // Note: In a real app, you might want to show a toast/notification here
-      return <Navigate to="/dashboard" replace />
+      // User doesn't have required role, log and redirect
+      logger.warn('Access denied', {
+        userRole: user.role,
+        requiredRoles: allowedRoles,
+        path: location.pathname,
+      })
+      // Redirect to dashboard - in a real app, you might want to show a toast/notification here
+      return <Navigate to="/dashboard" replace state={{ accessDenied: true }} />
     }
   }
 
   return <>{children}</>
-}
+})
+
+ProtectedRoute.displayName = 'ProtectedRoute'
 
 

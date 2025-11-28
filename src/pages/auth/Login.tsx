@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { LogIn, Mail, Lock, Loader2 } from 'lucide-react'
+import { logger } from '@/utils/logger'
 
 const loginSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -32,7 +33,7 @@ export const Login = () => {
       const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard'
       navigate(from, { replace: true })
     } catch (err) {
-      console.error('Login error:', err)
+      logger.error('Login error', err)
     }
   }
 

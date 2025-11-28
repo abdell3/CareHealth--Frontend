@@ -1,41 +1,79 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ProtectedRoute } from './protected-route'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { queryClient } from '@/lib/query-client'
 
-// Auth pages
-import { Login } from '@/pages/auth/Login'
-import { Register } from '@/pages/auth/Register'
-import { ForgotPassword } from '@/pages/auth/ForgotPassword'
-import { ResetPassword } from '@/pages/auth/ResetPassword'
+// Lazy load all pages for code splitting
+const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
+const Register = lazy(() => import('@/pages/auth/Register').then((m) => ({ default: m.Register })))
+const ForgotPassword = lazy(() =>
+  import('@/pages/auth/ForgotPassword').then((m) => ({ default: m.ForgotPassword }))
+)
+const ResetPassword = lazy(() =>
+  import('@/pages/auth/ResetPassword').then((m) => ({ default: m.ResetPassword }))
+)
 
-// Dashboard pages
-import { DashboardIndex } from '@/pages/dashboard/index'
-import { AppointmentsList } from '@/pages/dashboard/appointments/AppointmentsList'
-import { AppointmentDetail } from '@/pages/dashboard/appointments/AppointmentDetail'
-import { NewAppointment } from '@/pages/dashboard/appointments/NewAppointment'
-import { PatientsList } from '@/pages/dashboard/patients/PatientsList'
-import { PatientDetail } from '@/pages/dashboard/patients/PatientDetail'
-import { UsersList } from '@/pages/dashboard/users/UsersList'
-import { UserDetail } from '@/pages/dashboard/users/UserDetail'
-import { PrescriptionsList } from '@/pages/dashboard/prescriptions/PrescriptionsList'
-import { PrescriptionDetail } from '@/pages/dashboard/prescriptions/PrescriptionDetail'
-import { LabOrdersList } from '@/pages/dashboard/lab/LabOrdersList'
-import { LabOrderDetail } from '@/pages/dashboard/lab/LabOrderDetail'
-import { DocumentsList } from '@/pages/dashboard/documents/DocumentsList'
+const DashboardIndex = lazy(() =>
+  import('@/pages/dashboard/index').then((m) => ({ default: m.DashboardIndex }))
+)
+const AppointmentsList = lazy(() =>
+  import('@/pages/dashboard/appointments/AppointmentsList').then((m) => ({
+    default: m.AppointmentsList,
+  }))
+)
+const AppointmentDetail = lazy(() =>
+  import('@/pages/dashboard/appointments/AppointmentDetail').then((m) => ({
+    default: m.AppointmentDetail,
+  }))
+)
+const NewAppointment = lazy(() =>
+  import('@/pages/dashboard/appointments/NewAppointment').then((m) => ({
+    default: m.NewAppointment,
+  }))
+)
+const PatientsList = lazy(() =>
+  import('@/pages/dashboard/patients/PatientsList').then((m) => ({ default: m.PatientsList }))
+)
+const PatientDetail = lazy(() =>
+  import('@/pages/dashboard/patients/PatientDetail').then((m) => ({ default: m.PatientDetail }))
+)
+const UsersList = lazy(() =>
+  import('@/pages/dashboard/users/UsersList').then((m) => ({ default: m.UsersList }))
+)
+const UserDetail = lazy(() =>
+  import('@/pages/dashboard/users/UserDetail').then((m) => ({ default: m.UserDetail }))
+)
+const PrescriptionsList = lazy(() =>
+  import('@/pages/dashboard/prescriptions/PrescriptionsList').then((m) => ({
+    default: m.PrescriptionsList,
+  }))
+)
+const PrescriptionDetail = lazy(() =>
+  import('@/pages/dashboard/prescriptions/PrescriptionDetail').then((m) => ({
+    default: m.PrescriptionDetail,
+  }))
+)
+const LabOrdersList = lazy(() =>
+  import('@/pages/dashboard/lab/LabOrdersList').then((m) => ({ default: m.LabOrdersList }))
+)
+const LabOrderDetail = lazy(() =>
+  import('@/pages/dashboard/lab/LabOrderDetail').then((m) => ({ default: m.LabOrderDetail }))
+)
+const DocumentsList = lazy(() =>
+  import('@/pages/dashboard/documents/DocumentsList').then((m) => ({ default: m.DocumentsList }))
+)
 
-// Create QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-})
+// Loading fallback component
+const PageLoader = () => (
+  <div className="flex min-h-screen items-center justify-center">
+    <LoadingSpinner size="lg" />
+  </div>
+)
 
 const router = createBrowserRouter([
   // Public routes
@@ -43,7 +81,9 @@ const router = createBrowserRouter([
     path: '/login',
     element: (
       <AuthLayout>
-        <Login />
+        <Suspense fallback={<PageLoader />}>
+          <Login />
+        </Suspense>
       </AuthLayout>
     ),
   },
@@ -51,7 +91,9 @@ const router = createBrowserRouter([
     path: '/register',
     element: (
       <AuthLayout>
-        <Register />
+        <Suspense fallback={<PageLoader />}>
+          <Register />
+        </Suspense>
       </AuthLayout>
     ),
   },
@@ -59,7 +101,9 @@ const router = createBrowserRouter([
     path: '/forgot-password',
     element: (
       <AuthLayout>
-        <ForgotPassword />
+        <Suspense fallback={<PageLoader />}>
+          <ForgotPassword />
+        </Suspense>
       </AuthLayout>
     ),
   },
@@ -67,7 +111,9 @@ const router = createBrowserRouter([
     path: '/reset-password',
     element: (
       <AuthLayout>
-        <ResetPassword />
+        <Suspense fallback={<PageLoader />}>
+          <ResetPassword />
+        </Suspense>
       </AuthLayout>
     ),
   },
@@ -83,29 +129,45 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardIndex />,
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <DashboardIndex />
+          </Suspense>
+        ),
       },
       {
         path: 'appointments',
-        element: <AppointmentsList />,
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <AppointmentsList />
+          </Suspense>
+        ),
       },
       {
         path: 'appointments/new',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
-            <NewAppointment />
+            <Suspense fallback={<PageLoader />}>
+              <NewAppointment />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
       {
         path: 'appointments/:id',
-        element: <AppointmentDetail />,
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <AppointmentDetail />
+          </Suspense>
+        ),
       },
       {
         path: 'patients',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
-            <PatientsList />
+            <Suspense fallback={<PageLoader />}>
+              <PatientsList />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -113,7 +175,9 @@ const router = createBrowserRouter([
         path: 'patients/:id',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse', 'receptionist']}>
-            <PatientDetail />
+            <Suspense fallback={<PageLoader />}>
+              <PatientDetail />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -121,7 +185,9 @@ const router = createBrowserRouter([
         path: 'users',
         element: (
           <ProtectedRoute allowedRoles={['admin']}>
-            <UsersList />
+            <Suspense fallback={<PageLoader />}>
+              <UsersList />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -129,7 +195,9 @@ const router = createBrowserRouter([
         path: 'users/:id',
         element: (
           <ProtectedRoute allowedRoles={['admin']}>
-            <UserDetail />
+            <Suspense fallback={<PageLoader />}>
+              <UserDetail />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -137,7 +205,9 @@ const router = createBrowserRouter([
         path: 'prescriptions',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
-            <PrescriptionsList />
+            <Suspense fallback={<PageLoader />}>
+              <PrescriptionsList />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -145,7 +215,9 @@ const router = createBrowserRouter([
         path: 'prescriptions/:id',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
-            <PrescriptionDetail />
+            <Suspense fallback={<PageLoader />}>
+              <PrescriptionDetail />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -153,7 +225,9 @@ const router = createBrowserRouter([
         path: 'lab-orders',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
-            <LabOrdersList />
+            <Suspense fallback={<PageLoader />}>
+              <LabOrdersList />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -161,13 +235,19 @@ const router = createBrowserRouter([
         path: 'lab-orders/:id',
         element: (
           <ProtectedRoute allowedRoles={['admin', 'doctor', 'nurse']}>
-            <LabOrderDetail />
+            <Suspense fallback={<PageLoader />}>
+              <LabOrderDetail />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
       {
         path: 'documents',
-        element: <DocumentsList />,
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <DocumentsList />
+          </Suspense>
+        ),
       },
     ],
   },

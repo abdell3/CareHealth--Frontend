@@ -1,20 +1,19 @@
 import { UserCheck, Plus } from 'lucide-react'
+import { PageLayout } from '@/components/layouts/PageLayout'
+import { Button } from '@/components/ui/button'
 
 export const UsersList = () => {
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Utilisateurs</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Gérez tous les utilisateurs du système
-          </p>
-        </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+    <PageLayout
+      title="Utilisateurs"
+      description="Gérez tous les utilisateurs du système"
+      actionButton={
+        <Button>
           <Plus className="h-5 w-5" />
           Nouvel utilisateur
-        </button>
-      </div>
+        </Button>
+      }
+    >
 
       <div className="rounded-xl bg-white p-6 shadow-sm">
         <div className="flex flex-col items-center justify-center py-12">
@@ -27,7 +26,7 @@ export const UsersList = () => {
           </p>
         </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }
 

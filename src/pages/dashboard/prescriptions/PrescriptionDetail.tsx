@@ -1,24 +1,12 @@
-import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { FileText } from 'lucide-react'
+import { DetailPage } from '@/components/layouts/DetailPage'
 
 export const PrescriptionDetail = () => {
   const { id } = useParams()
 
   return (
-    <div>
-      <div className="mb-6 flex items-center gap-4">
-        <Link
-          to="/dashboard/prescriptions"
-          className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Détails de la prescription</h1>
-          <p className="mt-1 text-sm text-gray-600">ID: {id}</p>
-        </div>
-      </div>
-
+    <DetailPage title="Détails de la prescription" id={id} backTo="/dashboard/prescriptions">
       <div className="rounded-xl bg-white p-6 shadow-sm">
         <div className="flex flex-col items-center justify-center py-12">
           <FileText className="mb-4 h-12 w-12 text-gray-400" />
@@ -30,7 +18,7 @@ export const PrescriptionDetail = () => {
           </p>
         </div>
       </div>
-    </div>
+    </DetailPage>
   )
 }
 
