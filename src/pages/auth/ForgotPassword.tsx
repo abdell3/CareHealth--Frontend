@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Mail, ArrowLeft, Send, Loader2 } from 'lucide-react'
 import { useState } from 'react'
-import { api } from '@/api/axios'
+import { axiosInstance } from '@/api/axiosInstance'
 import { endpoints } from '@/api/endpoints'
 
 const forgotPasswordSchema = z.object({
@@ -30,7 +30,7 @@ export const ForgotPassword = () => {
     setIsSubmitting(true)
     setError(null)
     try {
-      await api.post(endpoints.auth.requestPasswordReset, { email: data.email })
+      await axiosInstance.post(endpoints.auth.requestPasswordReset, { email: data.email })
       setIsSubmitted(true)
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } }

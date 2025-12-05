@@ -5,8 +5,10 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ProtectedRoute } from './protected-route'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
+import { PatientLayout } from '@/layouts/PatientLayout'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { queryClient } from '@/lib/query-client'
+import { ThemeProvider } from '@/design-system'
 
 // Lazy load all pages for code splitting
 const Login = lazy(() => import('@/pages/auth/Login').then((m) => ({ default: m.Login })))
@@ -66,6 +68,40 @@ const LabOrderDetail = lazy(() =>
 )
 const DocumentsList = lazy(() =>
   import('@/pages/dashboard/documents/DocumentsList').then((m) => ({ default: m.DocumentsList }))
+)
+const Profile = lazy(() =>
+  import('@/pages/profile/Profile').then((m) => ({ default: m.Profile }))
+)
+const NotificationCenter = lazy(() =>
+  import('@/pages/dashboard/notifications/NotificationCenter').then((m) => ({
+    default: m.NotificationCenter,
+  }))
+)
+const SearchResultsPage = lazy(() =>
+  import('@/pages/dashboard/search/SearchResultsPage').then((m) => ({
+    default: m.SearchResultsPage,
+  }))
+)
+const PatientDashboard = lazy(() =>
+  import('@/pages/patient/PatientDashboard').then((m) => ({ default: m.PatientDashboard }))
+)
+const PatientAppointments = lazy(() =>
+  import('@/pages/patient/PatientAppointments').then((m) => ({ default: m.PatientAppointments }))
+)
+const PatientPrescriptions = lazy(() =>
+  import('@/pages/patient/PatientPrescriptions').then((m) => ({ default: m.PatientPrescriptions }))
+)
+const PatientLabResults = lazy(() =>
+  import('@/pages/patient/PatientLabResults').then((m) => ({ default: m.PatientLabResults }))
+)
+const PatientDocuments = lazy(() =>
+  import('@/pages/patient/PatientDocuments').then((m) => ({ default: m.PatientDocuments }))
+)
+const PatientBilling = lazy(() =>
+  import('@/pages/patient/PatientBilling').then((m) => ({ default: m.PatientBilling }))
+)
+const PatientSettings = lazy(() =>
+  import('@/pages/patient/PatientSettings').then((m) => ({ default: m.PatientSettings }))
 )
 
 // Loading fallback component
@@ -249,6 +285,114 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'profile',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <Profile />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'notifications',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <NotificationCenter />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'search',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <SearchResultsPage />
+          </Suspense>
+        ),
+      },
+    ],
+  },
+
+  // Patient routes
+  {
+    path: '/patient',
+    element: (
+      <ProtectedRoute allowedRoles={['patient', 'admin']}>
+        <PatientLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientDashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientDashboard />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'appointments',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientAppointments />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'appointments/:id',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <AppointmentDetail />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'prescriptions',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientPrescriptions />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'lab-results',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientLabResults />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientDocuments />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'billing',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientBilling />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <Suspense fallback={<PageLoader />}>
+            <PatientSettings />
+          </Suspense>
+        ),
+      },
     ],
   },
 
@@ -275,8 +419,10 @@ const router = createBrowserRouter([
 export const AppRouter = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }

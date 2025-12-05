@@ -1,0 +1,10 @@
+export { BaseWidget } from './BaseWidget'
+export type { BaseWidgetProps } from './BaseWidget'
+export { StatsWidget } from './StatsWidget'
+export { TableWidget } from './TableWidget'
+export { ListWidget } from './ListWidget'
+export { CalendarWidget } from './CalendarWidget'
+export { DynamicDashboard } from './DynamicDashboard'
+export { dashboardConfigs } from './dashboard.config'
+export type { DashboardWidget } from './dashboard.config'
+

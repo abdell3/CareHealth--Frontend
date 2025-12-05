@@ -34,6 +34,19 @@ export const endpoints = {
     upload: '/documents',
     download: (id: string) => `/documents/${id}/download`,
   },
+  pharmacy: '/pharmacy',
+  notifications: {
+    list: '/notifications',
+    detail: (id: string) => `/notifications/${id}`,
+    markRead: (id: string) => `/notifications/${id}/read`,
+    markAllRead: '/notifications/read-all',
+    stats: '/notifications/stats',
+    preferences: '/notifications/preferences',
+  },
+  search: {
+    global: '/search',
+    suggestions: '/search/suggestions',
+  },
 } as const
 
 export default endpoints

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Lock, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
 import { useState } from 'react'
-import { api } from '@/api/axios'
+import { axiosInstance } from '@/api/axiosInstance'
 import { endpoints } from '@/api/endpoints'
 
 const resetPasswordSchema = z
@@ -44,7 +44,7 @@ export const ResetPassword = () => {
     setIsSubmitting(true)
     setError(null)
     try {
-      await api.post(endpoints.auth.resetPassword, {
+      await axiosInstance.post(endpoints.auth.resetPassword, {
         token,
         password: data.password,
       })

@@ -1,237 +1,187 @@
-/**
- * API Response Types
- * Centralized type definitions for all API responses
- */
-
-import { type User } from '@/store/auth.store'
-
-// Base API Response wrapper
-export interface ApiResponse<T> {
-  data: T
-  message?: string
-  status: number
-}
-
-// Error Response
-export interface ApiError {
-  message: string
-  statusCode: number
-  errors?: Record<string, string[]>
-}
-
-// Auth API Types
-export interface LoginRequest {
-  email: string
-  password: string
-}
-
-export interface RegisterRequest {
-  email: string
-  password: string
-  firstName: string
-  lastName: string
-  phone?: string
-  role?: User['role']
-}
-
-export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string
-}
-
-export interface RequestPasswordResetRequest {
-  email: string
-}
-
-export interface ResetPasswordRequest {
-  token: string
-  password: string
-}
-
-// User API Types
-export interface UserResponse extends User {}
-
-export interface UsersListResponse {
-  users: User[]
-  total: number
-  page: number
-  limit: number
-}
-
-// Patient API Types
-export interface Patient {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string
-  dateOfBirth: string
-  gender: 'male' | 'female' | 'other'
-  address?: string
-  emergencyContact?: {
-    name: string
-    phone: string
-    relationship: string
-  }
-  medicalHistory?: string[]
-  allergies?: string[]
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PatientsListResponse {
-  patients: Patient[]
-  total: number
-  page: number
-  limit: number
-}
-
-// Appointment API Types
-export interface Appointment {
-  id: string
-  patientId: string
-  patient?: Patient
-  doctorId: string
-  doctor?: User
-  date: string
-  time: string
-  duration: number // in minutes
-  type: 'consultation' | 'follow-up' | 'emergency' | 'surgery'
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no-show'
-  notes?: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface AppointmentsListResponse {
-  appointments: Appointment[]
-  total: number
-  page: number
-  limit: number
-}
-
-export interface CreateAppointmentRequest {
-  patientId: string
-  doctorId: string
-  date: string
-  time: string
-  duration: number
-  type: Appointment['type']
-  notes?: string
-}
-
-// Prescription API Types
-export interface Prescription {
-  id: string
-  patientId: string
-  patient?: Patient
-  doctorId: string
-  doctor?: User
-  medications: Medication[]
-  instructions: string
-  startDate: string
-  endDate?: string
-  status: 'active' | 'completed' | 'cancelled'
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Medication {
-  name: string
-  dosage: string
-  frequency: string
-  duration: string
-  instructions?: string
-}
-
-export interface PrescriptionsListResponse {
-  prescriptions: Prescription[]
-  total: number
-  page: number
-  limit: number
-}
-
-export interface CreatePrescriptionRequest {
-  patientId: string
-  medications: Medication[]
-  instructions: string
-  startDate: string
-  endDate?: string
-}
-
-// Lab Order API Types
-export interface LabOrder {
-  id: string
-  patientId: string
-  patient?: Patient
-  doctorId: string
-  doctor?: User
-  tests: LabTest[]
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled'
-  notes?: string
-  results?: LabResult[]
-  createdAt: string
-  updatedAt: string
-}
-
-export interface LabTest {
-  name: string
-  code: string
-  category: string
-}
-
-export interface LabResult {
-  testName: string
-  value: string | number
-  unit?: string
-  referenceRange?: string
-  status: 'normal' | 'abnormal' | 'critical'
-}
-
-export interface LabOrdersListResponse {
-  orders: LabOrder[]
-  total: number
-  page: number
-  limit: number
-}
-
-export interface CreateLabOrderRequest {
-  patientId: string
-  tests: LabTest[]
-  notes?: string
-}
-
-// Document API Types
-export interface Document {
-  id: string
-  patientId?: string
-  patient?: Patient
-  uploadedBy: string
-  uploadedByUser?: User
-  name: string
-  type: string
-  size: number
-  url: string
-  category: 'medical-record' | 'prescription' | 'lab-result' | 'image' | 'other'
-  createdAt: string
-  updatedAt: string
-}
-
-export interface DocumentsListResponse {
-  documents: Document[]
-  total: number
-  page: number
-  limit: number
-}
+// ... existing code ...
 
 export interface UploadDocumentRequest {
   file: File
   patientId?: string
   category: Document['category']
+  tags?: string[]
+  documentDate?: string
+  confidentiality?: Document['confidentiality']
+  metadata?: Record<string, unknown>
 }
 
+export interface UploadDocumentsBatchRequest {
+  files: File[]
+  patientId?: string
+  defaultCategory?: Document['category']
+  defaultTags?: string[]
+  defaultConfidentiality?: Document['confidentiality']
+}
+
+// Notification Types
+export type NotificationType = 'system' | 'appointment' | 'medical' | 'message' | 'reminder'
+export type NotificationChannel = 'in-app' | 'push' | 'email' | 'sms'
+export type NotificationPriority = 'info' | 'success' | 'warning' | 'error' | 'urgent'
+export type NotificationStatus = 'unread' | 'read' | 'archived'
+
+export interface Notification {
+  id: string
+  userId: string
+  type: NotificationType
+  priority: NotificationPriority
+  status: NotificationStatus
+  title: string
+  message: string
+  channels: NotificationChannel[]
+  metadata?: {
+    appointmentId?: string
+    patientId?: string
+    prescriptionId?: string
+    labOrderId?: string
+    documentId?: string
+    url?: string
+    actionLabel?: string
+    [key: string]: unknown
+  }
+  readAt?: string
+  createdAt: string
+  expiresAt?: string
+}
+
+export interface NotificationPreferences {
+  userId: string
+  types: {
+    system: {
+      enabled: boolean
+      channels: NotificationChannel[]
+      quietHours?: { start: string; end: string }
+    }
+    appointment: {
+      enabled: boolean
+      channels: NotificationChannel[]
+      reminders?: {
+        '24h': boolean
+        '2h': boolean
+        'on-time': boolean
+      }
+    }
+    medical: {
+      enabled: boolean
+      channels: NotificationChannel[]
+      criticalOnly?: boolean
+    }
+    message: {
+      enabled: boolean
+      channels: NotificationChannel[]
+    }
+    reminder: {
+      enabled: boolean
+      channels: NotificationChannel[]
+    }
+  }
+  keywords?: string[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NotificationsListResponse {
+  notifications: Notification[]
+  total: number
+  unreadCount: number
+  page: number
+  limit: number
+}
+
+export interface NotificationStats {
+  total: number
+  unread: number
+  byType: Record<NotificationType, number>
+  byPriority: Record<NotificationPriority, number>
+}
+
+export interface CreateNotificationRequest {
+  userId: string
+  type: NotificationType
+  priority: NotificationPriority
+  title: string
+  message: string
+  channels?: NotificationChannel[]
+  metadata?: Notification['metadata']
+  expiresAt?: string
+}
+
+export interface MarkNotificationReadRequest {
+  notificationIds: string[]
+}
+
+export interface NotificationFilters {
+  type?: NotificationType[]
+  status?: NotificationStatus[]
+  priority?: NotificationPriority[]
+  dateFrom?: string
+  dateTo?: string
+  search?: string
+  page?: number
+  limit?: number
+}
+
+// Search Types
+export type SearchResultType = 'patient' | 'appointment' | 'prescription' | 'document' | 'lab'
+
+export interface SearchResult {
+  type: SearchResultType
+  id: string
+  title: string
+  description: string
+  relevance: number // 0-1
+  metadata: {
+    patientId?: string
+    appointmentId?: string
+    prescriptionId?: string
+    documentId?: string
+    labOrderId?: string
+    date?: string
+    status?: string
+    [key: string]: unknown
+  }
+  actions: Array<{
+    label: string
+    url: string
+    icon?: string
+  }>
+}
+
+export interface SearchResponse {
+  results: SearchResult[]
+  suggestions: string[]
+  filters: SearchFilter[]
+  total: number
+  byType: Record<SearchResultType, number>
+}
+
+export interface SearchFilter {
+  type: SearchResultType
+  label: string
+  count: number
+  enabled: boolean
+}
+
+export interface SearchParams {
+  q: string
+  types?: SearchResultType[]
+  dateFrom?: string
+  dateTo?: string
+  status?: string
+  city?: string
+  doctorId?: string
+  medication?: string
+  limit?: number
+  offset?: number
+  sortBy?: 'relevance' | 'date' | 'alphabetical'
+  advanced?: boolean
+  operators?: {
+    and?: string[]
+    or?: string[]
+    not?: string[]
+  }
+}

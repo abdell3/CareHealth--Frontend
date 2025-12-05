@@ -16,6 +16,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/libs/utils'
 import { getAccessibleRoutes } from '@/utils/role-based-access'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { PreferencesModal } from '@/components/notifications/PreferencesModal'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { GlobalSearchBar } from '@/components/search/GlobalSearchBar'
 
 interface NavItem {
   label: string
@@ -73,6 +77,10 @@ export const DashboardLayout = memo(() => {
   const { user, logout } = useAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showPreferences, setShowPreferences] = useState(false)
+
+  // Initialize push notifications
+  usePushNotifications()
 
   if (!user) return null
 
@@ -173,15 +181,19 @@ export const DashboardLayout = memo(() => {
       <div className="flex flex-1 flex-col lg:pl-64">
         {/* Header */}
         <header className="sticky top-0 z-10 h-16 border-b bg-white shadow-sm">
-          <div className="flex h-full items-center justify-between px-4 lg:px-6">
+          <div className="flex h-full items-center justify-between gap-4 px-4 lg:px-6">
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden"
             >
               <Menu className="h-6 w-6" />
             </button>
-            <div className="ml-auto">
-              <p className="text-sm text-gray-600">
+            <div className="flex-1 max-w-2xl hidden md:block">
+              <GlobalSearchBar />
+            </div>
+            <div className="ml-auto flex items-center gap-4">
+              <NotificationBell onPreferencesClick={() => setShowPreferences(true)} />
+              <p className="text-sm text-gray-600 hidden sm:block">
                 Bienvenue, <span className="font-medium">{user.firstName}</span>
               </p>
             </div>
@@ -193,6 +205,14 @@ export const DashboardLayout = memo(() => {
           <Outlet />
         </main>
       </div>
+
+      {/* Preferences Modal */}
+      {showPreferences && (
+        <PreferencesModal
+          open={showPreferences}
+          onClose={() => setShowPreferences(false)}
+        />
+      )}
     </div>
   )
 })

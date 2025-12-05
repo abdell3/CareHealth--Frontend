@@ -1,12 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { authStore, type User, type AuthResponse } from '@/store/auth.store'
-import { api } from '@/api/axios'
-import { endpoints } from '@/api/endpoints'
+import { authStore } from '@/store/auth.store'
+import { authService } from '@/api/auth.service'
 import type {
   LoginRequest,
   RegisterRequest,
-  AuthResponse as ApiAuthResponse,
 } from '@/types/api'
 
 /**
@@ -22,7 +20,7 @@ export const useAuth = () => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await api.post<ApiAuthResponse>(endpoints.auth.login, credentials)
+      const response = await authService.login(credentials)
       return response.data
     },
     onSuccess: (data) => {
@@ -39,7 +37,7 @@ export const useAuth = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterRequest) => {
-      const response = await api.post<ApiAuthResponse>(endpoints.auth.register, data)
+      const response = await authService.register(data)
       return response.data
     },
     onSuccess: () => {
@@ -67,20 +65,18 @@ export const useAuth = () => {
 
   // Refresh access token (imperative function for startup refresh)
   const refreshAccessToken = async (): Promise<void> => {
-    const refreshToken = authStore.getState().getRefreshToken()
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
     try {
-      const response = await api.post<ApiAuthResponse>(endpoints.auth.refresh, {
-        refreshToken,
-      })
-      authStore.getState().setAuth({
-        user: response.data.user,
-        accessToken: response.data.accessToken,
-        refreshToken: response.data.refreshToken,
-      })
+      const response = await authService.refresh()
+      const newAccessToken = response.data.accessToken
+      
+      // Update token in store (refresh token is in HTTP-only cookie)
+      const currentUser = authStore.getState().getUser()
+      if (currentUser) {
+        authStore.getState().setAuth({
+          user: currentUser,
+          accessToken: newAccessToken,
+        })
+      }
     } catch (error) {
       // Refresh failed, clear auth
       authStore.getState().clearAuth()
